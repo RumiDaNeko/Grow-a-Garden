@@ -445,7 +445,7 @@ local function StartServices()
 		HarvestPlants(PlantsPhysical)
 	end)
 
-	MakeLoop(AutoSubmit, function()
+	MakeLoop(AutoZen, function()
 		SubmitPlants(PlantsPhysical)
 	end)
 
