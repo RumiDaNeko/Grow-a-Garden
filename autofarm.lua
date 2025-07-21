@@ -321,7 +321,6 @@ local function CollectHarvestable(Parent, Plants, IgnoreDistance: boolean?)
 	local PlayerPosition = Character:GetPivot().Position
 	local children = Parent:GetChildren()
 	local index  = 1
-task.spawn(function()
 	while index <= #children do
 		local Plant = children[index]
 
@@ -356,7 +355,6 @@ task.spawn(function()
 		index += 1
 		RunService.Heartbeat:Wait() -- waits for next frame
 	end
-end)
     return Plants
 end
 
