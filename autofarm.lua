@@ -60,7 +60,7 @@ local HarvestIgnores = {
 }
 
 --// Globals
-local SelectedSeed, AutoPlantRandom, AutoPlant, AutoHarvest, AutoBuy, SellThreshold, NoClip, AutoWalkAllowRandom, AutoSubmit
+local SelectedSeed, AutoPlantRandom, AutoPlant, AutoHarvest, AutoBuy, SellThreshold, NoClip, AutoWalkAllowRandom, AutoZen
 
 local function CreateWindow()
 	local Window = ReGui:Window({
