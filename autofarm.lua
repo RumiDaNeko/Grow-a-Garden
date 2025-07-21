@@ -445,8 +445,10 @@ local function StartServices()
 		HarvestPlants(PlantsPhysical)
 	end)
 
-	MakeLoop(AutoZen, function()
+	game:GetService("RunService").Heartbeat:Connect(function()
+		if AutoZen.Value == true then
 		SubmitPlants(PlantsPhysical)
+			end
 	end)
 
 	--// Auto-Buy
