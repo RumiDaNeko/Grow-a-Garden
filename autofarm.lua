@@ -60,7 +60,7 @@ local HarvestIgnores = {
 }
 
 --// Globals
-local SelectedSeed, AutoPlantRandom, AutoPlant, AutoHarvest, AutoBuy, SellThreshold, NoClip, AutoWalkAllowRandom
+local SelectedSeed, AutoPlantRandom, AutoPlant, AutoHarvest, AutoBuy, SellThreshold, NoClip, AutoWalkAllowRandom, AutoSubmit
 
 local function CreateWindow()
 	local Window = ReGui:Window({
@@ -359,6 +359,10 @@ end)
     return Plants
 end
 
+local function SubmitPlants(IgnoreDistance: boolean?)
+    game:GetService("ReplicatedStorage").GameEvents.ZenAuraRemoteEvent:FireServer("SubmitAllPlants")
+end
+
 local function GetHarvestablePlants(IgnoreDistance: boolean?)
     local Plants = {}
     CollectHarvestable(PlantsPhysical, Plants, IgnoreDistance)
@@ -439,6 +443,10 @@ local function StartServices()
 	--// Auto-Harvest
 	MakeLoop(AutoHarvest, function()
 		HarvestPlants(PlantsPhysical)
+	end)
+
+	MakeLoop(AutoSubmit, function()
+		SubmitPlants(PlantsPhysical)
 	end)
 
 	--// Auto-Buy
@@ -563,7 +571,11 @@ AutoWalkMaxWait = WallNode:SliderInt({
     Minimum = 1,
     Maximum = 120,
 })
-
+local ZenNode = Window:TreeNode({Title="Auto-submit for zen 🚶"})
+AutoZen = ZenNode:Checkbox({
+	Value = false,
+	Label = "Enabled"
+})
 --// Connections
 RunService.Stepped:Connect(NoclipLoop)
 Backpack.ChildAdded:Connect(AutoSellCheck)
