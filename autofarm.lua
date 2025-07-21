@@ -321,7 +321,12 @@ local function CollectHarvestable(Parent, Plants, IgnoreDistance: boolean?)
 	local PlayerPosition = Character:GetPivot().Position
 	local children = Parent:GetChildren()
 	local index  = 1
-	while index <= #children do
+	game:GetService("RunService").Heartbeat:Connect(function(dt)
+	if index > #children then
+	index = 1
+	return 
+			end
+				
 		local Plant = children[index]
 
 		--// Fruits
