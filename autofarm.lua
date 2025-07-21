@@ -28,7 +28,7 @@ local GameEvents = ReplicatedStorage.GameEvents
 local Farms = workspace.Farm
 
 local Accent = {
-    DarkGreen = Color3.fromRGB(45, 95, 25),
+    Black = Color3.fromRGB(0, 0, 0),
     Green = Color3.fromRGB(69, 142, 40),
     Brown = Color3.fromRGB(26, 20, 8),
 }
@@ -39,11 +39,11 @@ ReGui:Init({
 })
 ReGui:DefineTheme("GardenTheme", {
 	WindowBg = Accent.Brown,
-	TitleBarBg = Accent.DarkGreen,
+	TitleBarBg = Accent.Black,
 	TitleBarBgActive = Accent.Green,
-    ResizeGrab = Accent.DarkGreen,
-    FrameBg = Accent.DarkGreen,
-    FrameBgActive = Accent.Green,
+    ResizeGrab = Accent.Black,
+    FrameBg = Accent.Black,
+    FrameBgActive = Accent.Black,
 	CollapsingHeaderBg = Accent.Green,
     ButtonsBg = Accent.Green,
     CheckMark = Accent.Green,
@@ -64,7 +64,7 @@ local SelectedSeed, AutoPlantRandom, AutoPlant, AutoHarvest, AutoBuy, SellThresh
 
 local function CreateWindow()
 	local Window = ReGui:Window({
-		Title = `{GameInfo.Name} | Depso`,
+		Title = `{GameInfo.Name} | RumiDaNeko`,
         Theme = "GardenTheme",
 		Size = UDim2.fromOffset(300, 200)
 	})
@@ -130,10 +130,13 @@ local function BuyAllSelectedSeeds()
     local Stock = SeedStock[Seed]
 
 	if not Stock or Stock <= 0 then return end
-
-    for i = 1, Stock do
+    local i = 1	
+    game:GetService("RunService").Heartbeat:Connect(function(deltaTime)
+	i+= 1
+	if i <= Stock then
         BuySeed(Seed)
-    end
+	end
+    end)
 end
 
 local function GetSeedInfo(Seed: Tool): number?
@@ -145,6 +148,7 @@ local function GetSeedInfo(Seed: Tool): number?
 end
 
 local function CollectSeedsFromParent(Parent, Seeds: table)
+	task.spawn(function()
 	for _, Tool in next, Parent:GetChildren() do
 		local Name, Count = GetSeedInfo(Tool)
 		if not Name then continue end
@@ -154,15 +158,18 @@ local function CollectSeedsFromParent(Parent, Seeds: table)
             Tool = Tool
         }
 	end
+		end)
 end
 
 local function CollectCropsFromParent(Parent, Crops: table)
+	task.spawn(function()
 	for _, Tool in next, Parent:GetChildren() do
 		local Name = Tool:FindFirstChild("Item_String")
 		if not Name then continue end
 
 		table.insert(Crops, Tool)
 	end
+		end)
 end
 
 local function GetOwnedSeeds(): table
@@ -266,11 +273,13 @@ local function AutoPlantLoop()
 end
 
 local function HarvestPlant(Plant: Model)
+	task.spawn(function()
 	local Prompt = Plant:FindFirstChild("ProximityPrompt", true)
 
 	--// Check if it can be harvested
 	if not Prompt then return end
 	fireproximityprompt(Prompt)
+		end)
 end
 
 local function GetSeedStock(IgnoreNoStock: boolean?): table
@@ -310,9 +319,12 @@ end
 local function CollectHarvestable(Parent, Plants, IgnoreDistance: boolean?)
 	local Character = LocalPlayer.Character
 	local PlayerPosition = Character:GetPivot().Position
+	local children = Parent:GetChildren()
+task.spawn(function()
+	while index <= #children do
+		local Plant = children[index]
 
-    for _, Plant in next, Parent:GetChildren() do
-        --// Fruits
+		--// Fruits
 		local Fruits = Plant:FindFirstChild("Fruits")
 		if Fruits then
 			CollectHarvestable(Fruits, Plants, IgnoreDistance)
@@ -320,18 +332,30 @@ local function CollectHarvestable(Parent, Plants, IgnoreDistance: boolean?)
 
 		--// Distance check
 		local PlantPosition = Plant:GetPivot().Position
-		local Distance = (PlayerPosition-PlantPosition).Magnitude
-		if not IgnoreDistance and Distance > 15 then continue end
+		local Distance = (PlayerPosition - PlantPosition).Magnitude
+		if not IgnoreDistance and Distance > 15 then
+			index += 1
+			RunService.Heartbeat:Wait()
+			continue
+		end
 
 		--// Ignore check
 		local Variant = Plant:FindFirstChild("Variant")
-		if HarvestIgnores[Variant.Value] then continue end
+		if Variant and HarvestIgnores[Variant.Value] then
+			index += 1
+			RunService.Heartbeat:Wait()
+			continue
+		end
 
-        --// Collect
-        if CanHarvest(Plant) then
-            table.insert(Plants, Plant)
-        end
+		--// Collect
+		if CanHarvest(Plant) then
+			table.insert(Plants, Plant)
+		end
+
+		index += 1
+		RunService.Heartbeat:Wait() -- waits for next frame
 	end
+end)
     return Plants
 end
 
